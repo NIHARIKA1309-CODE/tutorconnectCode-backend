@@ -1,4 +1,6 @@
 import User from "../models/User.model.js";
+import StudentProfile from "../models/StudentProfile.model.js";
+import TeacherProfile from "../models/TeacherProfile.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -8,9 +10,9 @@ import fs from "fs";
 
 /* -------------------------------- REGISTER -------------------------------- */
 export const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, phone, school, city, subjects, goals } = req.body;
 
-  console.log("Incoming Registration:", { name, email, role });
+  console.log("Incoming Registration:", { name, email, role, phone, school, city, subjects, goals });
 
   // Validate required fields
   if (!name || !email || !password || !role) {
@@ -46,6 +48,47 @@ export const registerUser = asyncHandler(async (req, res) => {
     role,
     avatar: uploadedAvatar.secure_url,
   });
+
+  // If role is student, create student profile automatically
+  if (role === "student") {
+    const studentProfile = await StudentProfile.create({
+      user: newUser._id,
+      contactNumber: phone || "",
+      school: school || "",
+      city: city || "",
+      subjectsChosen: subjects ? [subjects] : [],
+      goals: goals || "",
+      avatar: uploadedAvatar.secure_url,
+    });
+
+    // Update user with student profile reference
+    newUser.studentProfile = studentProfile._id;
+    await newUser.save();
+    
+    console.log("✅ Student profile created automatically:", studentProfile._id);
+  }
+
+  // If role is teacher, create teacher profile automatically
+  if (role === "teacher") {
+    const { qualification, experience, bio, address } = req.body;
+    
+    const teacherProfile = await TeacherProfile.create({
+      user: newUser._id,
+      subjects: subjects ? subjects.split(",").map(s => s.trim()) : [],
+      qualification: qualification || "",
+      experience: experience ? parseInt(experience) : 0,
+      bio: bio || "",
+      city: city || "",
+      address: address || "",
+      avatar: uploadedAvatar.secure_url,
+    });
+
+    // Update user with teacher profile reference
+    newUser.teacherProfile = teacherProfile._id;
+    await newUser.save();
+    
+    console.log("✅ Teacher profile created automatically:", teacherProfile._id);
+  }
 
   // Send JWT token & response via helper
   return sendToken(newUser, res, 201, "🎉 User registered successfully!");

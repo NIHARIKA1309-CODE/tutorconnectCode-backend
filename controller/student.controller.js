@@ -153,3 +153,35 @@ export const deleteStudentProfile = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(profile.user, { studentProfile: null });
   return res.status(200).json(new ApiResponse(200, null, "Student profile deleted"));
 });
+
+// ✅ Get student performance data
+export const getStudentPerformance = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  
+  const profile = await StudentProfile.findOne({ user: userId });
+  if (!profile) return res.status(404).json(new ApiResponse(404, null, "Profile not found"));
+
+  // Return performance data from profile
+  const performanceData = {
+    attendance: profile.attendance || 0,
+    performance: profile.performance || 0,
+    assignmentCompletion: profile.assignmentCompletion || 0,
+  };
+
+  return res.status(200).json(new ApiResponse(200, performanceData, "Performance data fetched"));
+});
+
+// ✅ Get student schedule
+export const getStudentSchedule = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  
+  // Mock schedule data for now - integrate with actual scheduling system later
+  const schedule = [
+    { day: "Monday", subject: "Mathematics", time: "10:00 AM - 11:00 AM" },
+    { day: "Wednesday", subject: "Science", time: "2:00 PM - 3:00 PM" },
+    { day: "Friday", subject: "English", time: "11:00 AM - 12:00 PM" },
+  ];
+
+  return res.status(200).json(new ApiResponse(200, { schedule }, "Schedule fetched"));
+});
+

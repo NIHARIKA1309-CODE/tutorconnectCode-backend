@@ -10,13 +10,19 @@ import { ApiError } from "../utils/ApiError.js";
 // this is the raw data for this 
 // ----------------- SEND MESSAGE -----------------
 export const sendMessage = asyncHandler(async (req, res) => {
-  const { sender, receiver, message, type, mediaUrl } = req.body;
+  const { senderId, receiverId, message } = req.body;
 
-  if (!sender || !receiver || (!message && !mediaUrl)) {
-    throw new ApiError(400, "Sender, receiver, and message or mediaUrl are required");
+  if (!senderId || !receiverId || !message) {
+    throw new ApiError(400, "Sender, receiver, and message are required");
   }
 
-  const newMessage = await Message.create({ sender, receiver, message, type, mediaUrl });
+  const newMessage = await Message.create({ 
+    sender: senderId, 
+    receiver: receiverId, 
+    message, 
+    type: "text",
+    createdAt: new Date()
+  });
 
   return res.status(201).json(new ApiResponse(201, { message: newMessage }, "Message sent successfully"));
 });
@@ -31,7 +37,8 @@ export const getConversation = asyncHandler(async (req, res) => {
       { sender: currentUserId, receiver: userId },
       { sender: userId, receiver: currentUserId },
     ],
-  }).sort({ createdAt: 1 });
+  })
+  .sort({ createdAt: 1 });
 
   return res.status(200).json(new ApiResponse(200, { messages }, "Conversation fetched successfully"));
 });

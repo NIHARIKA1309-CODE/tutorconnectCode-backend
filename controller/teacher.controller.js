@@ -80,9 +80,18 @@ export const createTeacherProfile = asyncHandler(async (req, res) => {
 
 // ✅ Get current teacher profile
 export const getTeacherProfile = asyncHandler(async (req, res) => {
-  const profile = await TeacherProfile.findOne({ user: req.user._id });
+  const profile = await TeacherProfile.findOne({ user: req.user._id }).populate("user", "name email avatar");
   if (!profile) return res.status(404).json(new ApiResponse(404, null, "Profile not found"));
-  return res.status(200).json(new ApiResponse(200, { profile }, "Teacher profile fetched"));
+  
+  // Flatten the response to include user fields at top level
+  const teacherData = {
+    ...profile.toObject(),
+    name: profile.user.name,
+    email: profile.user.email,
+    avatar: profile.avatar || profile.user.avatar,
+  };
+  
+  return res.status(200).json(new ApiResponse(200, teacherData, "Teacher profile fetched"));
 });
 
 
