@@ -5,7 +5,9 @@ import {
   updateStudentProfile,
   getAllStudents,
   deleteStudentProfile,
-  teacherUpdateStudentMetrics
+  teacherUpdateStudentMetrics,
+  getStudentPerformance,
+  getStudentSchedule
 } from "../controller/student.controller.js";
 
 
@@ -42,6 +44,22 @@ router.get(
   getStudentProfile
 );
 
+// ✅ Get student performance data (STUDENT only)
+router.get(
+  "/performance",
+  protect,
+  authorizeRoles("student"),
+  getStudentPerformance
+);
+
+// ✅ Get student schedule (STUDENT only)
+router.get(
+  "/schedule",
+  protect,
+  authorizeRoles("student"),
+  getStudentSchedule
+);
+
 
 // ✅ Update own profile (STUDENT only)
 router.put(
@@ -66,11 +84,10 @@ router.put(
 );
 
 
-// ✅ Get all students (TEACHER or ADMIN)
+// ✅ Get all students (Any authenticated user for chat)
 router.get(
   "/",
   protect,
-  authorizeRoles("teacher", "admin"),
   getAllStudents
 );
 

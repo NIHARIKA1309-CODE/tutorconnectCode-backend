@@ -18,8 +18,30 @@ import { registerSchema, loginSchema } from "../validations/user.validation.js";
 
 const router = express.Router();
 
+// Add logging to see if route is reached
+router.use((req, res, next) => {
+  console.log(`🔸 User route hit: ${req.method} ${req.path}`);
+  next();
+});
+
 // Register route (file + validation)
-router.post("/register", upload.single("avatar"), validate(registerSchema), registerUser);
+router.post("/register", 
+  (req, res, next) => {
+    console.log("🔸 Step 1: Before multer");
+    next();
+  },
+  upload.single("avatar"), 
+  (req, res, next) => {
+    console.log("🔸 Step 2: After multer, before validation");
+    next();
+  },
+  validate(registerSchema), 
+  (req, res, next) => {
+    console.log("🔸 Step 3: After validation, calling controller");
+    next();
+  },
+  registerUser
+);
 
 // Login route (validation)
 router.post("/login", validate(loginSchema), loginUser);

@@ -67,57 +67,22 @@ import validateObjectId from "../middleware/validateObjectId.middleware.js";
 
 const router = express.Router();
 
-/* --------------------------------------------------
-   CREATE TEACHER PROFILE (Teacher Only)
---------------------------------------------------- */
-// tested working well 
-router.post(
-  "/",
-  protect,
-  authorizeRoles("teacher"),
-  upload.single("avatar"),
-  // validate(teacherProfileSchema),
-  createTeacherProfile
-);
+// Get current teacher profile
+router.get("/me", protect, authorizeRoles("teacher"), getTeacherProfile);
 
-/* --------------------------------------------------
-   GET CURRENT TEACHER PROFILE
---------------------------------------------------- */
-// tested working well 
-router.get(
-  "/me",
-  protect,
-  authorizeRoles("teacher"),
-  getTeacherProfile
-);
-
-
-/* --------------------------------------------------
-   UPDATE TEACHER PROFILE (Teacher Only)
---------------------------------------------------- */
+// Update teacher profile
 router.put(
-  "/me/update",
+  "/update",
   protect,
   authorizeRoles("teacher"),
   upload.single("avatar"),
-  validate(teacherProfileSchema), // allow partial updates
   updateTeacherProfile
 );
 
-/* --------------------------------------------------
-   GET ALL TEACHERS (Any Logged-in User)
---------------------------------------------------- */
+// Get all teachers (Any authenticated user for chat)
 router.get("/", protect, getAllTeachers);
 
-/* --------------------------------------------------
-   DELETE TEACHER PROFILE (Admin Only)
---------------------------------------------------- */
-router.delete(
-  "/:id",
-  protect,
-  authorizeRoles("admin"),
-  validateObjectId("id"),
-  deleteTeacherProfile
-);
+// Delete teacher profile (Admin only)
+router.delete("/:id", protect, validateObjectId("id"), authorizeRoles("admin"), deleteTeacherProfile);
 
 export default router;
